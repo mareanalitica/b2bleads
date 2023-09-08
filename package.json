@@ -8,8 +8,8 @@
     "start": "npx tsx ./src/app.ts",
     "build": "tsc",
     "start:prod": "node ./dist/app.js",
-    "start:pm2": "npx pm2 start ./scripts/pm2config.json",
-    "stop:pm2": "npx pm2 stop minerador",
+    "start:pm2": "npx pm2 start ./dist/app.js",
+    "stop:pm2": "npx pm2 kill",
     "pack": "npx nexe -i ./dist/app.js -r ./node_modules -t x64-14.15.3 -o ./scripts/demonstracao.exe"
   },
   "keywords": [
