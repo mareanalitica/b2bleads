@@ -1,0 +1,14 @@
+{
+    "apps": [
+        {
+            "name": "minerador",
+            "script": "npm",
+            "args": "start:prod",
+            "cwd": "./dist",
+            "env": {
+                "NODE_ENV": "production",
+                "DATABASE_URL": "file:./dev.db"
+            }
+        }
+    ]
+}
