@@ -1,4 +1,5 @@
 # Aplicativo de Mineração de Dados Abertos
+![image](https://github.com/mareanalitica/b2bleads/assets/125692232/37325190-50ce-48e2-a0b1-5abfcf438a5d)
 
 ## Descrição
 Este projeto é um aplicativo de mineração de dados que permite realizar pesquisas em fontes de dados públicas e armazenar os resultados em um banco de dados. O aplicativo utiliza o Node.js e o Express como framework web para criar uma API que aceita consultas e retorna resultados de pesquisa.
