@@ -5,7 +5,8 @@
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "npx tsx --watch ./src/app.ts",
+    "setup:db": "npx prisma db push",
+    "start": "npx tsx ./src/app.ts",
     "build": "tsc",
     "start:prod": "node ./dist/app.js",
     "start:pm2": "npx pm2 start ./dist/app.js",
@@ -25,6 +26,7 @@
     "axios": "^1.5.0",
     "cheerio": "^1.0.0-rc.12",
     "cors": "^2.8.5",
+    "csv-writer": "^1.6.0",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "helmet": "^7.0.0",

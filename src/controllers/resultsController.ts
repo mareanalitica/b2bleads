@@ -5,7 +5,7 @@ import { load } from 'cheerio';
 import queue from 'queue';
 
 const prisma = new PrismaClient();
-const q = new queue({ concurrency: 1, timeout: 5000 });
+const q = new queue({ concurrency: 2, timeout: 7000 });
 
 export const listAllResults = async (req: Request, res: Response) => {
   try {
@@ -65,12 +65,11 @@ export const search = async (req: Request, res: Response) => {
 
     documents.forEach((document: any) => {
       q.push(async (cb: any) => {
-        const identifier = document.id;
-        const formatedRazaoSocial = document.razao.toLowerCase().replace(/[^a-zA-Z0-9]+/g, '-');
-        const formatedCnpj = document.cnpj.replace(/\D/g, '');
-        const url = `https://casadosdados.com.br/solucao/cnpj/${formatedRazaoSocial}-${formatedCnpj}`;
-
         try {
+          const identifier = document.id;
+          const formatedRazaoSocial = document.razao.toLowerCase().replace(/[^a-zA-Z0-9]+/g, '-');
+          const formatedCnpj = document.cnpj.replace(/\D/g, '');
+          const url = `https://casadosdados.com.br/solucao/cnpj/${formatedRazaoSocial}-${formatedCnpj}`;
           const dResponse = await axios.post(url, null, {
             headers: {
               'User-Agent': `demomarehub${identifier}`,
@@ -86,12 +85,19 @@ export const search = async (req: Request, res: Response) => {
             const dados = {
               cnpj: jsonResult.CNPJ,
               phones: convertPhoneNumbers(jsonResult.Telefone),
-              emails: jsonResult['E-MAIL'],
+              email: jsonResult['E-MAIL'],
             };
-            console.log(dados);
-
-            // Atualize o documento aqui usando o Prisma
-
+            await prisma.document.update({
+              where: {
+                id: identifier,
+              },
+              data: {
+                email: dados.email,
+                phone: JSON.stringify(dados.phones)
+              }
+            }).catch((erro: any) => {
+              console.log(erro)
+            });
             cb(); // Marca a tarefa como concluída na fila
           }
         } catch (error) {
@@ -102,13 +108,22 @@ export const search = async (req: Request, res: Response) => {
     });
 
     // Aguarde o término de todas as tarefas na fila
-    q.start((err: any) => {
+    q.start(async (err: any) => {
       if (err) {
         console.error("[ERRO NA FILA]", err);
         // return res.status(500).json({ error: 'Erro ao criar execução.' });
       }
       // Atualize a pesquisa para sucesso aqui
-      return res.status(200).json({ message: 'Pesquisa concluída com sucesso.' });
+      // Fazer o update de pesquisa: 
+      await prisma.search.update({
+        where: {
+          id: pendingExecution.id,
+        },
+        data: {
+          status: "sucess"
+        }
+      });
+      return res.status(200).json({ message: `Pesquisa ${pendingExecution.id} concluída com sucesso.` });
     });
   } catch (error) {
     console.log(error);
