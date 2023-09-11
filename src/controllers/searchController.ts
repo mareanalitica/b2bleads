@@ -20,12 +20,10 @@ export interface Company {
 export const search = async (req: Request, res: Response) => {
     const { params, status } = req.body;
     try {
-        // Realizar a pesquisa na casa dos dados e cadastrar os resultados previos
-
         const {
             query, range_query, extras
         } = params
-        let totalPages = 1;
+        let totalPages = 5;
         let sumOfItems = 0;
         let results: Company[] = [];
         for (let actualPage = 1; actualPage <= totalPages; actualPage++) {
@@ -44,14 +42,19 @@ export const search = async (req: Request, res: Response) => {
             );
             const minedData = response.data;
             const { count, cnpj } = minedData.data;
-            // Se count > 1000
-            // Atualizar o filtro e pesquisar com menos cidades
+            totalPages = Math.ceil(count / 20);
             if (actualPage === 1) {
                 console.log(`===================== Página: ${actualPage} - PESQUISA =====================`)
                 console.log("[Adicionando]", count);
                 sumOfItems = count
+                if (totalPages >= 50) {
+                    console.log("Melhore seu filtro, ou ative a opção por estado")
+                    totalPages = 50
+                }
             }
-            if (cnpj.length > 0) results.push(...cnpj)
+            if (cnpj !== undefined) {
+                if (cnpj.length > 0) results.push(...cnpj)
+            }
         }
         const pesquisa = await prisma.search.create({
             data: {
@@ -80,6 +83,7 @@ export const search = async (req: Request, res: Response) => {
         res.status(201).json({ total: sumOfItems, results });
     } catch (error) {
         console.log(error)
+
         res.status(500).json({ error: 'Algo deu errado ao criar pesquisa.' });
     }
 };

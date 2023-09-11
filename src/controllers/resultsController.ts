@@ -2,8 +2,10 @@ import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import axios from 'axios';
 import { load } from 'cheerio';
+import queue from 'queue';
 
 const prisma = new PrismaClient();
+const q = new queue({ concurrency: 1, timeout: 5000 });
 
 export const listAllResults = async (req: Request, res: Response) => {
   try {
@@ -56,58 +58,58 @@ export const search = async (req: Request, res: Response) => {
     if (!pendingExecution) {
       return res.status(404).json({ message: 'Nenhuma pesquisa pendente encontrada.' });
     }
-    // Pesquisar detalhes
-    const { documents } = pendingExecution
-    documents.forEach(async (document: any) => {
-      const identifier = document.id
-      // Remove espaços e caracteres especiais da razão social e transforma em letras minúsculas
-      const formatedRazaoSocial = document.razao.toLowerCase().replace(/[^a-zA-Z0-9]+/g, '-');
-      // Remove caracteres não numéricos do CNPJ
-      const formatedCnpj = document.cnpj.replace(/\D/g, '');
-      // Forma a URL completa
-      const url = `https://casadosdados.com.br/solucao/cnpj/${formatedRazaoSocial}-${formatedCnpj}`;
-      try {
-        const dResponse = await axios.post(url, null, {
-          headers: {
-            'User-Agent': `demomarehub${identifier}`,
-          },
-        });
-        if (dResponse.data !== null){
-          const detailsData = await dResponse.data;
-          const multiCssSelector = load(detailsData);
-          const narrowElements = multiCssSelector('.is-narrow');
-  
-          // Convertendo os elementos em formato JSON
-          const jsonResult = convertToJSON(multiCssSelector, narrowElements);
-          const dados = {
-            cnpj: jsonResult.CNPJ,
-            phones: convertPhoneNumbers(jsonResult.Telefone),
-            emails: jsonResult['E-MAIL'],
-          };
-          await prisma.document.update({
-            where: {
-              id: identifier
+
+    const { documents } = pendingExecution;
+
+
+
+    documents.forEach((document: any) => {
+      q.push(async (cb: any) => {
+        const identifier = document.id;
+        const formatedRazaoSocial = document.razao.toLowerCase().replace(/[^a-zA-Z0-9]+/g, '-');
+        const formatedCnpj = document.cnpj.replace(/\D/g, '');
+        const url = `https://casadosdados.com.br/solucao/cnpj/${formatedRazaoSocial}-${formatedCnpj}`;
+
+        try {
+          const dResponse = await axios.post(url, null, {
+            headers: {
+              'User-Agent': `demomarehub${identifier}`,
             },
-            data: {
-              phone: JSON.stringify(dados.phones),
-              email: dados.emails
-            }
-          })
+          });
+
+          if (dResponse.data !== null) {
+            const detailsData = await dResponse.data;
+            const multiCssSelector = load(detailsData);
+            const narrowElements = multiCssSelector('.is-narrow');
+
+            const jsonResult = convertToJSON(multiCssSelector, narrowElements);
+            const dados = {
+              cnpj: jsonResult.CNPJ,
+              phones: convertPhoneNumbers(jsonResult.Telefone),
+              emails: jsonResult['E-MAIL'],
+            };
+            console.log(dados);
+
+            // Atualize o documento aqui usando o Prisma
+
+            cb(); // Marca a tarefa como concluída na fila
+          }
+        } catch (error) {
+          console.log("[ERRO]", error);
+          cb(error); // Marca a tarefa como concluída com erro na fila
         }
-      } catch (error) {
-        console.log("[ERRO]", error)
+      })
+    });
+
+    // Aguarde o término de todas as tarefas na fila
+    q.start((err: any) => {
+      if (err) {
+        console.error("[ERRO NA FILA]", err);
+        // return res.status(500).json({ error: 'Erro ao criar execução.' });
       }
-    })
-    // Atualizar a pesquisa para sucesso
-    const updatedResult = await prisma.search.update({
-      where: {
-        id: pendingExecution.id
-      },
-      data: {
-        status: 'success'
-      }
-    })
-    return res.status(200).json(updatedResult);
+      // Atualize a pesquisa para sucesso aqui
+      return res.status(200).json({ message: 'Pesquisa concluída com sucesso.' });
+    });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ error: 'Erro ao criar execução.' });

@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
@@ -15,10 +15,9 @@ app.use(cors());
 app.use(helmet());
 app.use(morgan('dev'));
 app.use(express.json());
-app.use(authenticationMiddleware);
 
-app.use('/api', searchRoutes);
-app.use('/api', resultsRoutes);
+app.use('/api', authenticationMiddleware, searchRoutes);
+app.use('/api', authenticationMiddleware, resultsRoutes);
 
 const PORT = process.env.PORT || 4200;
 
