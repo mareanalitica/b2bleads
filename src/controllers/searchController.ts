@@ -5,6 +5,14 @@ import axios from 'axios';
 
 const prisma = new PrismaClient();
 
+export const removeAllQueryes = async (req: Request, res: Response) => {
+    try {
+        await prisma.search.deleteMany({});
+        res.json({ sucess: true });
+    } catch (error) {
+        res.status(500).json({ error: 'Erro ao buscar pesquisas.' });
+    }
+};
 export const getAllQueryes = async (req: Request, res: Response) => {
     try {
         const queries = await prisma.search.findMany();

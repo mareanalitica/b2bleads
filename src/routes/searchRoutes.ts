@@ -4,7 +4,7 @@
  */
 
 import { Router } from 'express';
-import { getAllQueryes, search } from '../controllers/searchController';
+import { getAllQueryes, search, removeAllQueryes } from '../controllers/searchController';
 
 const router = Router();
 
@@ -14,6 +14,13 @@ const router = Router();
  * @returns {Array<Object>} Array de objetos representando todas as pesquisas.
  */
 router.get('/search', getAllQueryes);
+
+/**
+ * @description Rota para obter todas as pesquisas.
+ * @route GET /api/search
+ * @returns {Array<Object>} Array de objetos representando todas as pesquisas.
+ */
+router.delete('/clean', removeAllQueryes);
 
 /**
  * @description Rota para executar uma pesquisa.
