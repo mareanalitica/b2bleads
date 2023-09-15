@@ -85,7 +85,7 @@ export const search = async (req: Request, res: Response) => {
             const dados = {
               cnpj: jsonResult.CNPJ,
               phones: convertPhoneNumbers(jsonResult.Telefone),
-              email: jsonResult['E-MAIL'],
+              email: jsonResult['E-MAIL'] == undefined ? '' : jsonResult['E-MAIL'],
             };
             await prisma.document.update({
               where: {
@@ -98,16 +98,15 @@ export const search = async (req: Request, res: Response) => {
             }).catch((erro: any) => {
               console.log(erro)
             });
-            cb(); // Marca a tarefa como concluída na fila
+            cb();
           }
         } catch (error) {
           console.log("[ERRO]", error);
-          cb(error); // Marca a tarefa como concluída com erro na fila
+          cb(error);
         }
       })
     });
 
-    // Aguarde o término de todas as tarefas na fila
     q.start(async (err: any) => {
       if (err) {
         console.error("[ERRO NA FILA]", err);
