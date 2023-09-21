@@ -42,51 +42,9 @@ npm start
 O aplicativo estará acessível em `http://localhost:4200` (ou na porta configurada).
 
 ## Rotas da API
-- `/api/search` (GET): Retorna todas as pesquisas realizadas.
-- `/api/search` (POST): Realiza uma pesquisa de dados abertos e armazena os resultados no banco de dados.
-  
-  - Exemplo de corpo da solicitação:
-  ```json
-  {
-    "params": {
-      "query": {
-        "termo": [],
-        "atividade_principal": [],
-        "natureza_juridica": [],
-        "uf": ["SP"],
-        "municipio": [],
-        "situacao_cadastral": "ATIVA",
-        "cep": [],
-        "ddd": []
-      },
-      "range_query": {
-        "data_abertura": {
-            "lte": null,
-            "gte": null
-        },
-        "capital_social": {
-            "lte": "10000",
-            "gte": "10000"
-        }
-      },
-      "extras": {
-        "somente_mei": false,
-        "excluir_mei": false,
-        "com_email": false,
-        "incluir_atividade_secundaria": false,
-        "com_contato_telefonico": false,
-        "somente_fixo": false,
-        "somente_celular": false,
-        "somente_matriz": false,
-        "somente_filial": false
-      }
-    },
-    "status": "pending"
-  }
-  ```
 
-- `/api/results/executions` (GET): Retorna todas as execuções de pesquisa armazenadas no banco de dados.
-- `/api/results/execute` (POST): Realiza uma execução de pesquisa pendente, obtém detalhes adicionais dos resultados e atualiza o status para "success".
+- [Postman](https://documenter.getpostman.com/view/29644412/2s9YC1YEqD)
+
 
 ## Contribuição
 Contribuições são bem-vindas! Sinta-se à vontade para abrir problemas (issues) e enviar solicitações de pull (pull requests) para melhorar este projeto.
