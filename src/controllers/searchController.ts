@@ -27,8 +27,8 @@ export interface Company {
 }
 export const search = async (req: Request, res: Response) => {
     try {
-        const { params, status } = JSON.parse(req.body);
         console.log(req.body)
+        const { params, status } = JSON.parse(req.body);
         const {
             query, range_query, extras
         } = params
