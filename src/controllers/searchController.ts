@@ -26,11 +26,13 @@ export interface Company {
     razao_social: string
 }
 export const search = async (req: Request, res: Response) => {
-    const { params, status } = req.body;
     try {
+        const { params, status } = JSON.parse(req.body);
+        console.log(req.body)
         const {
             query, range_query, extras
         } = params
+        console.log(params)
         let totalPages = 5;
         let sumOfItems = 0;
         let results: Company[] = [];
