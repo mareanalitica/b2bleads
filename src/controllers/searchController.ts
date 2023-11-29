@@ -31,7 +31,7 @@ export const search = async (req: Request, res: Response) => {
         const { params, status } = req.params;
         const {
             query, range_query, extras
-        } = params
+        } = JSON.parse(params)
         let totalPages = 5;
         let sumOfItems = 0;
         let results: Company[] = [];
