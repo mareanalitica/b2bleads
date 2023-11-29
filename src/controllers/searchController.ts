@@ -28,6 +28,9 @@ export interface Company {
 
 export const search = async (req: Request, res: Response) => {
     try {
+        console.log("BODY",req.body)
+        console.log("PARAMS",req.params)
+        console.log("QUERY",req.query)
         const { params, status } = req.params;
         const {
             query, range_query, extras
