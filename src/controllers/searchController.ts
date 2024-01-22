@@ -28,16 +28,17 @@ export interface Company {
 
 export const search = async (req: Request, res: Response) => {
     try {
-        console.log("BODY",req.body)
-        console.log("PARAMS",req.params)
-        console.log("QUERY",req.query)
-        const { params, status } = req.params;
         const {
             query, range_query, extras
-        } = JSON.parse(params)
+        } = req.body.params
+        const { status } = req.body
         let totalPages = 5;
         let sumOfItems = 0;
         let results: Company[] = [];
+
+        // Define 'params' here
+        const params = { query, range_query, extras };
+
         for (let actualPage = 1; actualPage <= totalPages; actualPage++) {
             const postData = {
                 query, range_query, extras, page: actualPage
@@ -62,12 +63,14 @@ export const search = async (req: Request, res: Response) => {
                 if (totalPages >= 50) {
                     console.log("Melhore seu filtro, ou ative a opção por estado")
                     totalPages = 50
+                    return res.status(400).json({ message: "Melhore seu filtro" })
                 }
             }
             if (cnpj !== undefined) {
                 if (cnpj.length > 0) results.push(...cnpj)
             }
         }
+
         const pesquisa = await prisma.search.create({
             data: {
                 params: JSON.stringify(params),

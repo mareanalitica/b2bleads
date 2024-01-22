@@ -70,6 +70,7 @@ export const search = async (req: Request, res: Response) => {
           const formatedRazaoSocial = document.razao.toLowerCase().replace(/[^a-zA-Z0-9]+/g, '-');
           const formatedCnpj = document.cnpj.replace(/\D/g, '');
           const url = `https://casadosdados.com.br/solucao/cnpj/${formatedRazaoSocial}-${formatedCnpj}`;
+          console.log(`Pesquisando\n\nURL: ${url}`)
           const dResponse = await axios.post(url, null, {
             headers: {
               'User-Agent': `demomarehub${identifier}`,
